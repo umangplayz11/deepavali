@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Felicia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="fireworks" aria-hidden="true"></div>
+
+    <main class="surprise-wrapper">
+        <div class="glow glow-one"></div>
+        <div class="glow glow-two"></div>
+
+        <section class="hero">
+            <p class="eyebrow">Deepavali wishes from India to Malaysia</p>
+            <h1>
+                For the one I love
+                <span>154 beautiful days, one unforgettable bond.</span>
+            </h1>
+
+            <div class="love-badge">
+                <span class="heart">❤</span>
+                <p>From India to Malaysia, every moment with you has felt like a little celebration of love.</p>
+            </div>
+
+            <button type="button" class="cta" id="openLetterBtn">Open my heart</button>
+        </section>
+
+        <section id="quizPanel" class="quiz-panel" aria-labelledby="quizTitle" hidden>
+            <div class="quiz-card">
+                <p class="quiz-kicker">A little love quiz</p>
+                <h2 id="quizTitle">Answer these to unlock your surprise</h2>
+                <p class="quiz-description">A few little questions about us. Get them all right and your surprise is only yours like i am only yours. 💜</p>
+                <p class="quiz-progress" id="quizProgress"></p>
+                <h3 class="quiz-question" id="quizQuestion"></h3>
+                <div class="quiz-answers" id="quizAnswers"></div>
+                <p class="quiz-status" id="quizStatus" role="status" aria-live="polite"></p>
+            </div>
+        </section>
+
+        <section id="letter" class="letter" aria-live="polite" hidden>
+            <div class="letter-card">
+                <p class="label">To my Felicia,</p>
+                <h2>May this Deepavali fill your world with light, the soft kind that stays even when everything feels heavy.</h2>
+                <p>
+                    154 days with you have already become the most precious memories of my life. Two countries, India and Malaysia,
+                    yet somehow our hearts found the same quiet rhythm, the same warmth, the same kind of love that doesn’t need to shout to be felt.
+                </p>
+                <p>
+                    Every diya I see this year glows a little brighter because of you. Your smile has become my favourite kind of comfort,
+                    your laughter the sound I miss the most, and your presence — even from far away — the thing that makes my world feel lighter.
+                </p>
+                <p>
+                    This Deepavali, I don’t just wish you happiness. I wish you the quiet knowing that you are seen, you are valued, and you are deeply loved.
+                    May every spark of light remind you that you never have to face the dark alone, and that your life is far too precious to ever doubt its worth.
+                </p>
+                <p>
+                    You are my greatest blessing, My Future Wife. Not just today, but every single day.
+                </p>
+                <div class="signature">With all my love and the warmest Deepavali wishes, <span>Your Idiot Umang</span></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.fireworks.js"></script>
+    <script type="text/javascript">
+        $('.fireworks').fireworks({
+            sound: true,
+            opacity: 0.9,
+            width: '100%',
+            height: '100%'
+        });
+
+        const letter = document.getElementById('letter');
+        const openLetterBtn = document.getElementById('openLetterBtn');
+        const quizPanel = document.getElementById('quizPanel');
+        const quizProgress = document.getElementById('quizProgress');
+        const quizQuestion = document.getElementById('quizQuestion');
+        const quizAnswers = document.getElementById('quizAnswers');
+        const quizStatus = document.getElementById('quizStatus');
+
+        // Swap these sample questions and options for your own when you're ready.
+        const questions = [
+            {
+                question: 'What do I mention the most in our conversations?',
+                answers: ['Our Future', 'Some sed talks', 'None of the above'],
+                correctAnswer: 0,
+                customAnswerIndex: 2
+            },
+            {
+                question: 'How many beautiful days does the page celebrate?',
+                answers: ['100 days', '154 days', '200 days'],
+                correctAnswer: 1
+            },
+            {
+                question: 'When did we meet for the first time?',
+                answers: ['9th June 2026', '12th June 2026', '11th June 2026'],
+                correctAnswer: 2
+            }
+        ];
+        let currentQuestion = 0;
+
+        function advanceQuestion() {
+            currentQuestion += 1;
+            if (currentQuestion === questions.length) {
+                quizPanel.hidden = true;
+                revealLetter();
+                return;
+            }
+
+            showQuestion();
+        }
+
+        async function saveCustomAnswer(answer, submitButton) {
+            submitButton.disabled = true;
+            quizStatus.textContent = 'Saving your answer...';
+
+            try {
+                const response = await fetch('/api/answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ answer })
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Your answer could not be saved.');
+                }
+
+                quizStatus.textContent = 'Answer saved! On to the next one ✨';
+                advanceQuestion();
+            } catch (error) {
+                quizStatus.textContent = error.message === 'Failed to fetch'
+                    ? 'Could not reach the local quiz server. Start it with "node server.js" and try again.'
+                    : error.message;
+                submitButton.disabled = false;
+            }
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            quizProgress.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+            quizQuestion.textContent = question.question;
+            quizAnswers.replaceChildren();
+            quizStatus.textContent = '';
+
+            question.answers.forEach(function (answer, index) {
+                const answerButton = document.createElement('button');
+                answerButton.type = 'button';
+                answerButton.className = 'answer-btn';
+                answerButton.textContent = answer;
+                answerButton.addEventListener('click', function () {
+                    if (index === question.customAnswerIndex) {
+                        quizAnswers.replaceChildren();
+
+                        const answerForm = document.createElement('form');
+                        answerForm.className = 'custom-answer-form';
+
+                        const answerInput = document.createElement('input');
+                        answerInput.className = 'custom-answer-input';
+                        answerInput.type = 'text';
+                        answerInput.name = 'answer';
+                        answerInput.maxLength = 1000;
+                        answerInput.placeholder = 'Type your answer here...';
+                        answerInput.setAttribute('aria-label', 'Your answer');
+                        answerInput.required = true;
+
+                        const submitButton = document.createElement('button');
+                        submitButton.className = 'answer-btn custom-answer-submit';
+                        submitButton.type = 'submit';
+                        submitButton.textContent = 'Save answer';
+
+                        answerForm.append(answerInput, submitButton);
+                        answerForm.addEventListener('submit', function (event) {
+                            event.preventDefault();
+                            const typedAnswer = answerInput.value.trim();
+                            if (typedAnswer) {
+                                saveCustomAnswer(typedAnswer, submitButton);
+                            }
+                        });
+
+                        quizAnswers.appendChild(answerForm);
+                        answerInput.focus();
+                        quizStatus.textContent = 'Type your answer, then save it to continue.';
+                        return;
+                    }
+
+                    if (index !== question.correctAnswer) {
+                        quizStatus.textContent = 'Not quite! Give it another guess 💜';
+                        return;
+                    }
+
+                    advanceQuestion();
+                });
+                quizAnswers.appendChild(answerButton);
+            });
+        }
+
+        function revealLetter() {
+            letter.hidden = false;
+            requestAnimationFrame(function () {
+                letter.classList.add('revealed');
+                letter.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        }
+
+        openLetterBtn.addEventListener('click', function () {
+            openLetterBtn.hidden = true;
+            quizPanel.hidden = false;
+            showQuestion();
+            quizPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    </script>
+</body>
+</html>
